@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3999;
 
 // 中间件
 app.use(cors());
@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(express.static('.'));
 
 // MongoDB连接
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://admin:password@localhost:27017/mike_research?authSource=admin';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://stock:681123@192.168.1.2:27017/edu?authSource=admin';
 
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
@@ -127,7 +127,7 @@ app.post('/api/n8n/trigger/:workflowId', async (req, res) => {
 // 模拟n8n工作流触发
 async function triggerN8NWorkflow(workflowId, data) {
   // 实际项目中应该使用n8n的webhook URL
-  const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL || 'http://localhost:5678/webhook';
+  const n8nWebhookUrl = process.env.N8N_WEBHOOK_URL || 'https://n8n.wdg.us.kg';
 
   try {
     // 模拟n8n API调用
