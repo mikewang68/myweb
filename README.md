@@ -50,7 +50,7 @@
 3. **配置环境变量** (可选)
    创建 `.env` 文件：
    ```env
-   PORT=3000
+   PORT=3999
    MONGODB_URI=mongodb://localhost:27017/mike_research
    N8N_WEBHOOK_URL=http://localhost:5678/webhook
    ```

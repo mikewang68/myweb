@@ -1,23 +1,18 @@
 # 使用Node.js官方镜像
 FROM node:18-alpine
 
-# 安装 Git
-RUN apk update && apk add git
+# 安装 Git 和 curl（用于健康检查）
+RUN apk update && apk add git curl
 
 # 设置工作目录
 WORKDIR /app
 
-# 复制package.json和package-lock.json
-COPY package*.json ./
+# 从GitHub拉取最新代码
+RUN git clone https://github.com/mikewang68/myweb.git .
 
 # 安装依赖
-RUN npm install
+RUN npm ci --only=production
 
-# 清空工作目录内容
-RUN rm -rf *
-
-# 拉取最新代码
-RUN git clone https://github.com/mikewang68/myweb.git .
 # 创建课程目录
 RUN mkdir -p courses
 
@@ -28,6 +23,9 @@ EXPOSE 3999
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3999/ || exit 1
 
+# 复制启动脚本
+COPY start-with-git-pull.sh .
+RUN chmod +x start-with-git-pull.sh
+
 # 启动命令
-CMD ["node", "server.js"]
-# CMD ["npm", "start"]
+CMD ["./start-with-git-pull.sh"]

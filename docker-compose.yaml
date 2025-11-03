@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # MongoDB数据库
+  mongodb:
+    image: mongo:7.0
+    container_name: mike-research-mongodb
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=password
+      - MONGO_INITDB_DATABASE=mike_research
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    ports:
+      - "27017:27017"
+    networks:
+      - mike-research-network
+
+  # n8n工作流服务
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: mike-research-n8n
+    restart: unless-stopped
+    environment:
+      - DB_TYPE=sqlite
+      - N8N_BASIC_AUTH_ACTIVE=false
+      - N8N_ENCRYPTION_KEY=your-encryption-key-here
+      - N8N_DEFAULT_LOCALE=zh
+    volumes:
+      - n8n_data:/home/node/.n8n
+    ports:
+      - "5678:5678"
+    networks:
+      - mike-research-network
+    depends_on:
+      - mongodb
+
+  # Mike的研究空间网站
+  web:
+    build: .
+    container_name: mike-research-web
+    restart: unless-stopped
+    environment:
+      - PORT=3999
+      - MONGODB_URI=mongodb://admin:password@mongodb:27017/mike_research?authSource=admin
+      - N8N_WEBHOOK_URL=http://n8n:5678/webhook
+    ports:
+      - "3999:3999"
+    volumes:
+      - ./courses:/app/courses
+    networks:
+      - mike-research-network
+    depends_on:
+      - mongodb
+      - n8n
+
+  # Nginx反向代理（可选）
+  nginx:
+    image: nginx:alpine
+    container_name: mike-research-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    networks:
+      - mike-research-network
+    depends_on:
+      - web
+
+volumes:
+  mongodb_data:
+    driver: local
+  n8n_data:
+    driver: local
+
+networks:
+  mike-research-network:
+    driver: bridge
+
