@@ -14,52 +14,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('.'));
 
-// 模拟数据（作为备用）
-const researchData = [
-  {
-    id: 1,
-    name: "基于深度学习的量化投资策略研究",
-    description: "探索深度学习在量化投资中的应用，构建多因子模型",
-    date: "2024-01-15",
-    price: 5.0,
-    workflowId: "research-1"
-  },
-  {
-    id: 2,
-    name: "人工智能在金融风控中的应用",
-    description: "研究AI技术在金融风险控制中的最新进展",
-    date: "2024-01-10",
-    price: 10.0,
-    workflowId: "research-2"
-  },
-  {
-    id: 3,
-    name: "区块链技术在金融领域的创新应用",
-    description: "分析区块链技术在金融创新中的实际案例",
-    date: "2024-01-05",
-    price: 10.0,
-    workflowId: "research-3"
-  }
-];
-
-const coursesData = [
-  {
-    id: 1,
-    name: "Python量化投资入门",
-    description: "从零开始学习Python在量化投资中的应用",
-    type: "下载",
-    downloadUrl: "/courses/python-quant.pdf",
-    workflowId: "course-1"
-  },
-  {
-    id: 2,
-    name: "机器学习实战课程",
-    description: "手把手教你构建机器学习模型",
-    type: "在线服务",
-    serviceUrl: "ml-course",
-    workflowId: "course-2"
-  }
-];
 
 // 连接到MongoDB
 async function connectToMongoDB() {
@@ -77,7 +31,6 @@ async function connectToMongoDB() {
 // API路由
 
 // 获取科研论文数据
-// 获取科研论文数据
 app.get('/api/research', async (req, res) => {
   try {
     console.log('开始获取科研数据...');
@@ -91,15 +44,21 @@ app.get('/api/research', async (req, res) => {
       console.log(`从数据库获取到 ${data.length} 条科研数据`);
       res.json(data);
     } else {
-      console.log('使用模拟数据 - MongoDB连接失败');
-      res.json(researchData);
+      console.log('MongoDB连接失败，返回错误');
+      res.status(500).json({
+        error: true,
+        message: '数据库连接失败，无法获取科研数据'
+      });
     }
   } catch (error) {
     console.error('获取科研论文数据失败:', error);
-    console.log('使用模拟数据 - 出现异常');
-    res.json(researchData);
+    res.status(500).json({
+      error: true,
+      message: '获取科研数据时发生错误'
+    });
   }
 });
+
 // 获取课程数据
 app.get('/api/courses', async (req, res) => {
   try {
@@ -109,13 +68,18 @@ app.get('/api/courses', async (req, res) => {
       const data = await coursesCollection.find({}).toArray();
       res.json(data);
     } else {
-      // 如果MongoDB连接失败，返回模拟数据
-      res.json(coursesData);
+      console.log('MongoDB连接失败，返回错误');
+      res.status(500).json({
+        error: true,
+        message: '数据库连接失败，无法获取课程数据'
+      });
     }
   } catch (error) {
     console.error('获取课程数据失败:', error);
-    // 出错时返回模拟数据
-    res.json(coursesData);
+    res.status(500).json({
+      error: true,
+      message: '获取课程数据时发生错误'
+    });
   }
 });
 

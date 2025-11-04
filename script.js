@@ -18,7 +18,17 @@ async function loadResearchData() {
   try {
     // 从MongoDB获取数据
     const response = await fetch('/api/research');
+
+    if (!response.ok) {
+      throw new Error(`HTTP错误: ${response.status}`);
+    }
+
     const researchData = await response.json();
+
+    // 检查是否是错误响应
+    if (researchData.error) {
+      throw new Error(researchData.message || '数据库连接失败');
+    }
 
     tableBody.innerHTML = '';
 
