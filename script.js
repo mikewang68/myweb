@@ -1,74 +1,4 @@
-// 模拟数据 - 科研论文
-const researchData = [
-  {
-    id: 1,
-    name: "基于深度学习的量化投资策略研究",
-    description: "探索深度学习在量化投资中的应用，构建多因子模型",
-    date: "2024-01-15",
-    price: 5.0,
-    workflowId: "research-1"
-  },
-  {
-    id: 2,
-    name: "人工智能在金融风控中的应用",
-    description: "研究AI技术在金融风险控制中的最新进展",
-    date: "2024-01-10",
-    price: 10.0,
-    workflowId: "research-2"
-  },
-  {
-    id: 3,
-    name: "区块链技术在金融领域的创新应用",
-    description: "分析区块链技术在金融创新中的实际案例",
-    date: "2024-01-05",
-    price: 10.0,
-    workflowId: "research-3"
-  },
-  {
-    id: 4,
-    name: "机器学习在股票预测中的实证研究",
-    description: "基于历史数据的机器学习模型预测效果分析",
-    date: "2023-12-28",
-    price: 10.0,
-    workflowId: "research-4"
-  }
-];
-
-// 模拟数据 - 课程教学
-const coursesData = [
-  {
-    id: 1,
-    name: "Python量化投资入门",
-    description: "从零开始学习Python在量化投资中的应用",
-    type: "下载",
-    downloadUrl: "/courses/python-quant.pdf",
-    workflowId: "course-1"
-  },
-  {
-    id: 2,
-    name: "机器学习实战课程",
-    description: "手把手教你构建机器学习模型",
-    type: "在线服务",
-    serviceUrl: "ml-course",
-    workflowId: "course-2"
-  },
-  {
-    id: 3,
-    name: "金融数据分析与可视化",
-    description: "使用Python进行金融数据分析和可视化展示",
-    type: "下载",
-    downloadUrl: "/courses/finance-analysis.zip",
-    workflowId: "course-3"
-  },
-  {
-    id: 4,
-    name: "区块链技术原理与应用",
-    description: "深入理解区块链技术及其在金融领域的应用",
-    type: "在线服务",
-    serviceUrl: "blockchain-course",
-    workflowId: "course-4"
-  }
-];
+// 删除原有的模拟数据定义，改为从API动态获取
 
 // 当前选中的项目
 let currentSelectedItem = null;
@@ -100,7 +30,7 @@ async function loadResearchData() {
             <td>${item.description}</td>
             <td>${formatDate(item.date)}</td>
             <td>
-                <button class="btn btn-donate btn-action" onclick="showPaymentModal('research', ${item.id})">
+                <button class="btn btn-donate btn-action" onclick="showPaymentModal('research', ${item.id}, '${item.name}', ${item.price}, '${item.workflowId}')">
                     <i class="fas fa-coins me-1"></i>打赏体验 ¥${item.price}
                 </button>
             </td>
@@ -187,23 +117,24 @@ function setupEventListeners() {
   });
 }
 
-// 显示支付模态框
-function showPaymentModal(type, itemId) {
-  let item;
-  if (type === 'research') {
-    item = researchData.find(r => r.id === itemId);
-  }
-
-  if (!item) return;
-
-  currentSelectedItem = { type, item };
+// 显示支付模态框（修改后的版本，不依赖本地模拟数据）
+function showPaymentModal(type, itemId, itemName, itemPrice, workflowId) {
+  currentSelectedItem = {
+    type,
+    item: {
+      id: itemId,
+      name: itemName,
+      price: itemPrice,
+      workflowId: workflowId
+    }
+  };
 
   const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
   const title = document.querySelector('#paymentModal .modal-title');
   const qrContainer = document.getElementById('qrCodeContainer');
   const statusDiv = document.getElementById('paymentStatus');
 
-  title.textContent = `打赏体验 - ${item.name}`;
+  title.textContent = `打赏体验 - ${itemName}`;
   statusDiv.innerHTML = '';
 
   // 生成模拟二维码（实际项目中应该使用真实的支付API）
@@ -211,7 +142,7 @@ function showPaymentModal(type, itemId) {
         <div class="text-center">
             <div style="width: 200px; height: 200px; background: #f8f9fa; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #dee2e6; border-radius: 10px;">
                 <div class="text-center">
-                    <div style="font-size: 2rem; color: #28a745;">¥${item.price}</div>
+                    <div style="font-size: 2rem; color: #28a745;">¥${itemPrice}</div>
                     <div style="font-size: 0.8rem; color: #6c757d; margin-top: 10px;">模拟支付二维码</div>
                 </div>
             </div>
@@ -330,33 +261,3 @@ function showLoadingAlert(message) {
   // 在实际项目中可以使用更优雅的加载提示
   alert(`⏳ ${message}`);
 }
-
-// MongoDB数据操作函数（示例）
-async function saveToDatabase(collection, data) {
-  try {
-    const response = await fetch('/api/mongodb/save', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        collection: collection,
-        data: data
-      })
-    });
-    return await response.json();
-  } catch (error) {
-    console.error('保存到数据库失败:', error);
-  }
-}
-
-async function loadFromDatabase(collection, query = {}) {
-  try {
-    const response = await fetch(`/api/mongodb/load?collection=${collection}&query=${encodeURIComponent(JSON.stringify(query))}`);
-    return await response.json();
-  } catch (error) {
-    console.error('从数据库加载失败:', error);
-    return [];
-  }
-}
-
