@@ -66,6 +66,7 @@ async function connectToMongoDB() {
   try {
     await client.connect();
     console.log('成功连接到MongoDB');
+    console.log('连接URI:', MONGODB_URI); // 添加这行来确认连接字符串
     return client.db('edu');
   } catch (error) {
     console.error('MongoDB连接失败:', error);
@@ -76,24 +77,29 @@ async function connectToMongoDB() {
 // API路由
 
 // 获取科研论文数据
+// 获取科研论文数据
 app.get('/api/research', async (req, res) => {
   try {
+    console.log('开始获取科研数据...');
+    console.log('MongoDB URI:', MONGODB_URI);
+
     const db = await connectToMongoDB();
     if (db) {
+      console.log('成功获取数据库连接');
       const researchCollection = db.collection('research');
       const data = await researchCollection.find({}).toArray();
+      console.log(`从数据库获取到 ${data.length} 条科研数据`);
       res.json(data);
     } else {
-      // 如果MongoDB连接失败，返回模拟数据
+      console.log('使用模拟数据 - MongoDB连接失败');
       res.json(researchData);
     }
   } catch (error) {
     console.error('获取科研论文数据失败:', error);
-    // 出错时返回模拟数据
+    console.log('使用模拟数据 - 出现异常');
     res.json(researchData);
   }
 });
-
 // 获取课程数据
 app.get('/api/courses', async (req, res) => {
   try {
