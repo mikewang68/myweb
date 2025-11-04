@@ -1,15 +1,20 @@
 const express = require('express');
 const cors = require('cors');
+const { MongoClient } = require('mongodb');
 
 const app = express();
 const PORT = process.env.PORT || 3999;
+
+// MongoDB连接配置
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://stock:681123@192.168.1.2:27017/?authSource=admin';
+const client = new MongoClient(MONGODB_URI);
 
 // 中间件
 app.use(cors());
 app.use(express.json());
 app.use(express.static('.'));
 
-// 模拟数据
+// 模拟数据（作为备用）
 const researchData = [
   {
     id: 1,
@@ -56,16 +61,56 @@ const coursesData = [
   }
 ];
 
+// 连接到MongoDB
+async function connectToMongoDB() {
+  try {
+    await client.connect();
+    console.log('成功连接到MongoDB');
+    return client.db('edu');
+  } catch (error) {
+    console.error('MongoDB连接失败:', error);
+    return null;
+  }
+}
+
 // API路由
 
 // 获取科研论文数据
-app.get('/api/research', (req, res) => {
-  res.json(researchData);
+app.get('/api/research', async (req, res) => {
+  try {
+    const db = await connectToMongoDB();
+    if (db) {
+      const researchCollection = db.collection('research');
+      const data = await researchCollection.find({}).toArray();
+      res.json(data);
+    } else {
+      // 如果MongoDB连接失败，返回模拟数据
+      res.json(researchData);
+    }
+  } catch (error) {
+    console.error('获取科研论文数据失败:', error);
+    // 出错时返回模拟数据
+    res.json(researchData);
+  }
 });
 
 // 获取课程数据
-app.get('/api/courses', (req, res) => {
-  res.json(coursesData);
+app.get('/api/courses', async (req, res) => {
+  try {
+    const db = await connectToMongoDB();
+    if (db) {
+      const coursesCollection = db.collection('courses');
+      const data = await coursesCollection.find({}).toArray();
+      res.json(data);
+    } else {
+      // 如果MongoDB连接失败，返回模拟数据
+      res.json(coursesData);
+    }
+  } catch (error) {
+    console.error('获取课程数据失败:', error);
+    // 出错时返回模拟数据
+    res.json(coursesData);
+  }
 });
 
 // 保存支付记录

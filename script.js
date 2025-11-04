@@ -81,13 +81,20 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // 加载科研论文数据
-function loadResearchData() {
+async function loadResearchData() {
   const tableBody = document.getElementById('researchTableBody');
-  tableBody.innerHTML = '';
+  tableBody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="loading"></div> 正在加载数据...</td></tr>';
 
-  researchData.forEach(item => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
+  try {
+    // 从MongoDB获取数据
+    const response = await fetch('/api/research');
+    const researchData = await response.json();
+
+    tableBody.innerHTML = '';
+
+    researchData.forEach(item => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
             <td>${item.id}</td>
             <td><strong>${item.name}</strong></td>
             <td>${item.description}</td>
@@ -98,42 +105,57 @@ function loadResearchData() {
                 </button>
             </td>
         `;
-    tableBody.appendChild(row);
-  });
+      tableBody.appendChild(row);
+    });
+  } catch (error) {
+    console.error('加载科研论文数据失败:', error);
+    tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">数据加载失败，请刷新页面重试</td></tr>';
+  }
 }
 
 // 加载课程数据
-function loadCoursesData() {
+async function loadCoursesData() {
   const tableBody = document.getElementById('coursesTableBody');
-  tableBody.innerHTML = '';
+  tableBody.innerHTML = '<tr><td colspan="5" class="text-center"><div class="loading"></div> 正在加载数据...</td></tr>';
 
-  coursesData.forEach(item => {
-    const row = document.createElement('tr');
+  try {
+    // 从MongoDB获取数据
+    const response = await fetch('/api/courses');
+    const coursesData = await response.json();
 
-    let actionButton = '';
-    if (item.type === '下载') {
-      actionButton = `
+    tableBody.innerHTML = '';
+
+    coursesData.forEach(item => {
+      const row = document.createElement('tr');
+
+      let actionButton = '';
+      if (item.type === '下载') {
+        actionButton = `
                 <button class="btn btn-download btn-action" onclick="downloadFile('${item.downloadUrl}')">
                     <i class="fas fa-download me-1"></i>下载资源
                 </button>
             `;
-    } else {
-      actionButton = `
-                <button class="btn btn-service btn-action" onclick="startService('${item.workflowId}')">
+      } else {
+        actionButton = `
+                <button class="btn btn-service btn-action" onclick="startService('${item.serviceUrl}')">
                     <i class="fas fa-play me-1"></i>启动服务
                 </button>
             `;
-    }
+      }
 
-    row.innerHTML = `
+      row.innerHTML = `
             <td>${item.id}</td>
             <td><strong>${item.name}</strong></td>
             <td>${item.description}</td>
             <td><span class="badge ${item.type === '下载' ? 'bg-primary' : 'bg-success'}">${item.type}</span></td>
             <td>${actionButton}</td>
         `;
-    tableBody.appendChild(row);
-  });
+      tableBody.appendChild(row);
+    });
+  } catch (error) {
+    console.error('加载课程数据失败:', error);
+    tableBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger">数据加载失败，请刷新页面重试</td></tr>';
+  }
 }
 
 // 设置事件监听器
@@ -265,26 +287,28 @@ function triggerN8NWorkflow(workflowId) {
 
 // 下载文件
 function downloadFile(url) {
-  // 模拟下载
   console.log(`下载文件: ${url}`);
-  showSuccessAlert('开始下载，请稍候...');
 
-  // 实际项目中应该使用真实的下载链接
-  // window.location.href = url;
+  // 创建隐藏的下载链接
+  const downloadLink = document.createElement('a');
+  downloadLink.href = url;
+  downloadLink.download = url.split('/').pop(); // 从URL中提取文件名
+  downloadLink.style.display = 'none';
+
+  // 添加到页面并触发点击
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  document.body.removeChild(downloadLink);
+
+  showSuccessAlert('下载已开始，请检查您的下载文件夹！');
 }
 
 // 启动服务
-function startService(workflowId) {
-  console.log(`启动服务: ${workflowId}`);
+function startService(serviceUrl) {
+  console.log(`启动服务: ${serviceUrl}`);
 
-  // 显示启动中状态
-  showLoadingAlert('正在启动服务...');
-
-  // 模拟服务启动
-  setTimeout(() => {
-    triggerN8NWorkflow(workflowId);
-    showSuccessAlert('服务已成功启动！');
-  }, 2000);
+  // 直接跳转到服务页面
+  window.location.href = serviceUrl;
 }
 
 // 工具函数
