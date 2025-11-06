@@ -7,17 +7,13 @@ RUN apk add --no-cache git curl
 # 设置工作目录
 WORKDIR /app
 
-# 先安装依赖（利用缓存：只有 package.json 变才重新安装）
-COPY package*.json ./
+# 克隆最新代码
+RUN git clone --depth 1 https://github.com/mikewang68/myweb.git . && \
+    rm -rf .git && \
+    mkdir -p courses
+
+# 安装依赖
 RUN npm ci --only=production
-
-# 拉取最新代码（覆盖当前目录）
-RUN rm -rf /app/* /app/.* 2>/dev/null || true && \
-    git clone --depth 1 https://github.com/mikewang68/myweb.git /app && \
-    rm -rf /app/.git
-
-# 创建课程目录（如果代码中没有）
-RUN mkdir -p courses
 
 # 暴露端口
 EXPOSE 3999

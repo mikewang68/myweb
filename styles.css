@@ -123,6 +123,42 @@ body {
     border-color: #dee2e6;
 }
 
+/* 表格序号列样式 */
+.table td:first-child {
+    min-width: 60px;
+    max-width: 80px;
+    white-space: nowrap;
+    text-align: center;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.table th:first-child {
+    min-width: 60px;
+    max-width: 80px;
+    white-space: nowrap;
+    text-align: center;
+}
+
+/* 表格名称列样式 */
+.table td:nth-child(2) {
+    min-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.table th:nth-child(2) {
+    min-width: 200px;
+    white-space: nowrap;
+    text-align: center;
+}
+
+/* 表格标题居中 */
+.table th {
+    text-align: center;
+}
+
 .table-hover tbody tr:hover {
     background-color: rgba(52, 152, 219, 0.1);
     transform: translateX(5px);
@@ -187,6 +223,17 @@ body {
     filter: invert(1);
 }
 
+/* 科研论文表格操作列样式 */
+#researchTable td:nth-child(5) {
+    min-width: 150px;
+    white-space: nowrap;
+}
+
+#researchTable .btn-action {
+    min-width: 130px;
+    white-space: nowrap;
+}
+
 /* 课程表格操作列样式 */
 #coursesTable td:nth-child(5) {
     min-width: 120px;
@@ -197,6 +244,9 @@ body {
     min-width: 100px;
     white-space: nowrap;
 }
+
+/* 响应式设计 */
+@media (max-width: 768px) {
     .hero-section h1 {
         font-size: 2.5rem;
     }
